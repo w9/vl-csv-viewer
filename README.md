@@ -102,6 +102,44 @@ viewer = CSVViewer(
 viewer.view_csv('data.csv')
 ```
 
+## Testing
+
+The VL package includes a comprehensive test suite to ensure code quality and correctness.
+
+### Running Tests
+
+You can run the tests using Python's unittest framework:
+
+```bash
+# Run all tests
+python -m unittest discover tests
+
+# Run specific test file
+python -m unittest tests/test_formatter.py
+
+# Run specific test case
+python -m unittest tests.test_formatter.TestCSVViewer
+```
+
+Alternatively, if you have pytest installed:
+
+```bash
+# Install pytest and coverage
+pip install pytest pytest-cov
+
+# Run tests with coverage report
+pytest --cov=vl
+
+# Generate HTML coverage report
+pytest --cov=vl --cov-report=html
+```
+
+### Test Organization
+
+- `tests/fixtures/` - Contains test data files
+- `tests/test_formatter.py` - Tests for the formatter module
+- `tests/test_cli.py` - Tests for the command-line interface
+
 ## License
 
 MIT
