@@ -292,6 +292,63 @@ class TestCSVViewer(unittest.TestCase):
         # Check if view_csv was called on the instance
         mock_instance.view_csv.assert_called_once_with(self.small_fixture)
 
+    def test_column_width_consistency(self):
+        """Test that all cells in a column have the same width."""
+        viewer = CSVViewer(border_style='simple')
+        
+        # Create data with varying content lengths
+        data = [
+            ['Short', 'Medium Column', 'This is a very long column header'],
+            ['A', 'Medium value', 'Long value but not as long'],
+            ['Abc', 'M', 'Another very very very long value that should be consistent']
+        ]
+        
+        # Format each row
+        # Create a reader-like object to use with _calculate_initial_col_widths
+        def mock_reader():
+            for row in data:
+                yield row
+        
+        col_widths, _ = viewer._calculate_initial_col_widths(mock_reader())
+        formatted_rows = [viewer._format_row(row, col_widths) for row in data]
+        
+        # Measure the position of each vertical separator in each row
+        # Extract character positions of vertical separators
+        separator_positions = []
+        for row in formatted_rows:
+            positions = [i for i, char in enumerate(row) if char == '|']
+            separator_positions.append(positions)
+        
+        # Verify all rows have the same number of separators
+        self.assertTrue(all(len(pos) == len(separator_positions[0]) for pos in separator_positions))
+        
+        # Verify separator positions are consistent across all rows
+        # (i.e., columns have consistent widths)
+        for i in range(len(separator_positions[0])):
+            position_values = [pos[i] for pos in separator_positions]
+            self.assertEqual(len(set(position_values)), 1, 
+                            f"Vertical separators at position {i} are not aligned: {position_values}")
+        
+        # Additionally, verify column widths are applied correctly
+        for i, width in enumerate(col_widths):
+            # All rows should have cells with the content padded to the same width
+            cell_widths = []
+            for row_idx, row in enumerate(data):
+                if i < len(row):  # Only check if this row has this column
+                    # Calculate expected width (column width + padding)
+                    expected_width = width + 2  # +2 for padding spaces
+                    # Calculate actual width from formatted row
+                    if i < len(row) - 1:  # Not the last column
+                        start_pos = separator_positions[row_idx][i]
+                        end_pos = separator_positions[row_idx][i+1]
+                        actual_width = end_pos - start_pos - 1  # -1 for the separator itself
+                        cell_widths.append(actual_width)
+            
+            # Verify all cells in this column have the same width
+            if cell_widths:
+                self.assertEqual(len(set(cell_widths)), 1, 
+                                f"Column {i} has inconsistent cell widths: {cell_widths}")
+
 
 if __name__ == '__main__':
     unittest.main()
