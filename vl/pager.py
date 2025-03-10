@@ -13,17 +13,24 @@ def main(args=None):
         less_cmd = ['less', '-SR']
         
         # Open the less process
-        less_proc = subprocess.Popen(less_cmd, stdin=subprocess.PIPE)
+        less_proc = subprocess.Popen(less_cmd, stdin=subprocess.PIPE, universal_newlines=True)
         
-        # Redirect stdout to the less process
+        # Capture the output to a StringIO buffer
+        from io import StringIO
+        buffer = StringIO()
+        
+        # Redirect stdout to our buffer
         old_stdout = sys.stdout
-        sys.stdout = less_proc.stdin
+        sys.stdout = buffer
         
         # Run the CLI with the provided arguments
         exit_code = cli.main(args)
         
+        # Get the output and write it to less
+        output = buffer.getvalue()
+        less_proc.stdin.write(output)
+        
         # Restore stdout and close the pipe
-        sys.stdout.flush()
         sys.stdout = old_stdout
         less_proc.stdin.close()
         
