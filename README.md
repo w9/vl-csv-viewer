@@ -33,12 +33,19 @@ Basic usage:
 # View a CSV file
 vl data.csv
 
+# View a CSV file with pager (less -SR)
+vll data.csv
+
 # Specify a different delimiter
 vl -d ';' data.csv
 
 # Don't treat the first row as a header
 vl --no-header data.csv
 ```
+
+The package provides two commands:
+- `vl`: Directly outputs to the terminal
+- `vll`: Pipes the output through `less -SR` pager (supports scrolling for large files)
 
 ### Display Options
 
