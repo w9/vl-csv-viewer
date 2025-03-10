@@ -129,24 +129,6 @@ class TestCSVViewer(unittest.TestCase):
         formatted = viewer._format_separator(col_widths, 'top')
         self.assertEqual(formatted, "")
 
-    def test_adjust_column_widths(self):
-        """Test column width adjustment."""
-        viewer = CSVViewer(min_col_width=2, max_col_width=None)
-        
-        # Patch terminal width to a known value
-        viewer.term_width = 40
-        
-        # Original widths fit within terminal
-        col_widths = [5, 3, 5]
-        adjusted = viewer._adjust_column_widths(col_widths)
-        self.assertEqual(adjusted, [5, 3, 5])
-        
-        # Original widths exceed terminal (calculated width = 3 * (w + 3) + 1)
-        col_widths = [20, 15, 10]  # Total: 3 * (w + 3) + 1 = 136
-        adjusted = viewer._adjust_column_widths(col_widths)
-        # Should be reduced to fit within 40 chars
-        self.assertLessEqual(sum(w + 3 for w in adjusted) + 1, 41)
-
     @patch('sys.stdout', new_callable=io.StringIO)
     def test_view_csv_with_file(self, mock_stdout):
         """Test viewing a CSV file."""
@@ -346,8 +328,45 @@ class TestCSVViewer(unittest.TestCase):
             
             # Verify all cells in this column have the same width
             if cell_widths:
-                self.assertEqual(len(set(cell_widths)), 1, 
+                self.assertEqual(len(set(cell_widths)), 1,
                                 f"Column {i} has inconsistent cell widths: {cell_widths}")
+    
+    @patch('sys.stdout', new_callable=io.StringIO)
+    def test_column_width_consistency_large_file(self, mock_stdout):
+        """Test column width consistency with the large CSV file."""
+        # Format and output the large CSV file
+        viewer = CSVViewer(output_stream=mock_stdout, border_style='simple')
+        viewer.view_csv(self.large_fixture)
+        
+        # Get the formatted output
+        output = mock_stdout.getvalue()
+        
+        # Split into lines
+        lines = output.strip().split('\n')
+        
+        # Identify border and data lines (exclude the total count line)
+        border_lines = [line for line in lines if line.startswith('+') and '-' in line]
+        data_lines = [line for line in lines if line.startswith('|') and not line.startswith('| Total')]
+        
+        # Check that all border lines have the same length
+        border_lengths = [len(line) for line in border_lines]
+        self.assertEqual(len(set(border_lengths)), 1,
+                         f"Border lines have inconsistent lengths: {border_lengths}")
+        
+        # Check that all data lines have the same length
+        data_lengths = [len(line) for line in data_lines]
+        self.assertEqual(len(set(data_lengths)), 1,
+                         f"Data lines have inconsistent lengths: {data_lengths}")
+        
+        # Verify vertical alignment by checking vertical bar positions
+        for line_idx, line in enumerate(data_lines):
+            if line_idx == 0:  # First line serves as reference
+                reference_positions = [i for i, char in enumerate(line) if char == '|']
+            else:
+                positions = [i for i, char in enumerate(line) if char == '|']
+                # Both lists should have the same length and same values
+                self.assertEqual(reference_positions, positions,
+                                f"Vertical separators in line {line_idx} are misaligned")
 
 
 if __name__ == '__main__':

@@ -140,15 +140,23 @@ class CSVViewer:
         border_chars = self.border_chars
         cells = []
         
-        for i, (cell, width) in enumerate(zip(row, col_widths)):
-            cell_str = str(cell)
-            if self.max_col_width:
-                cell_str = self._truncate_cell(cell_str, self.max_col_width)
-                
-            cells.append(f" {cell_str:<{width}} ")
+        # Ensure we don't process more columns than we have widths for
+        # This prevents inconsistent line lengths when rows have different numbers of columns
+        process_cols = min(len(row), len(col_widths))
+        
+        for i in range(process_cols):
+            cell = str(row[i])
+            width = col_widths[i]
+            
+            # First truncate if needed (this ensures all cells in a column have the same effective width)
+            if self.max_col_width and len(cell) > self.max_col_width:
+                cell = self._truncate_cell(cell, self.max_col_width)
+            
+            # Ensure the cell is exactly the width specified in col_widths
+            cells.append(f" {cell:<{width}} ")
         
         # Add empty cells if row has fewer columns than col_widths
-        for i in range(len(row), len(col_widths)):
+        for i in range(process_cols, len(col_widths)):
             cells.append(f" {'':<{col_widths[i]}} ")
         
         # Join cells with vertical border character
@@ -174,51 +182,6 @@ class CSVViewer:
         else:
             return ''
 
-    def _adjust_column_widths(self, col_widths: List[int]) -> List[int]:
-        """
-        Adjust column widths to fit within terminal width.
-        If the total width exceeds terminal width, proportionally reduce widths.
-        
-        Args:
-            col_widths: Original column widths
-            
-        Returns:
-            Adjusted column widths
-        """
-        # Calculate total width including borders
-        # Each column has its width + 2 spaces + 1 border character
-        # Plus 1 more border character at the end
-        total_width = sum(w + 3 for w in col_widths) + 1
-        
-        # If total width fits, return original widths
-        if total_width <= self.term_width:
-            return col_widths
-            
-        # Calculate how much we need to reduce
-        excess = total_width - self.term_width
-        
-        # Reduce column widths proportionally
-        # First, calculate total "reducible" width (excluding minimum widths)
-        reducible_width = sum(max(0, w - self.min_col_width) for w in col_widths)
-        
-        # If reducible width is less than excess, we can't fit all columns
-        # In that case, we'll just return minimal widths for as many columns as possible
-        if reducible_width < excess:
-            max_columns = (self.term_width - 1) // (self.min_col_width + 3)
-            return [self.min_col_width] * max_columns
-        
-        # Calculate reduction factor
-        reduction_factor = excess / reducible_width
-        
-        # Reduce each column proportionally
-        adjusted_widths = []
-        for w in col_widths:
-            reducible = max(0, w - self.min_col_width)
-            reduction = int(reducible * reduction_factor)
-            adjusted_widths.append(max(self.min_col_width, w - reduction))
-            
-        return adjusted_widths
-
     def view_csv(self, file_path: str) -> None:
         """
         View a CSV file in the terminal.
@@ -227,13 +190,10 @@ class CSVViewer:
             file_path: Path to the CSV file
         """
         reader = self._csv_reader(file_path)
-        
+
         # Calculate initial column widths from preview rows
         col_widths, preview_rows = self._calculate_initial_col_widths(reader)
-        
-        # Adjust column widths to fit terminal width
-        col_widths = self._adjust_column_widths(col_widths)
-        
+
         # Print top border
         if self.border_style != 'none':
             top_border = self._format_separator(col_widths, 'top')
