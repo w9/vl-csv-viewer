@@ -26,6 +26,44 @@ pip install -e .
 pip install .
 ```
 
+## Shell Completion
+
+VL supports shell completion for bash, zsh, and other shells via [argcomplete](https://github.com/kislyuk/argcomplete). This allows you to use tab completion for commands and options.
+
+### Bash
+
+To enable bash completion, add the following to your `~/.bashrc` file:
+
+```bash
+eval "$(register-python-argcomplete vl)"
+eval "$(register-python-argcomplete vll)"
+```
+
+Or for global completion for all argcomplete-enabled commands:
+
+```bash
+eval "$(register-python-argcomplete --global)"
+```
+
+### Zsh
+
+For zsh, you need to enable bash completion compatibility mode. Add the following to your `~/.zshrc`:
+
+```zsh
+autoload -U bashcompinit
+bashcompinit
+eval "$(register-python-argcomplete vl)"
+eval "$(register-python-argcomplete vll)"
+```
+
+Or for global completion:
+
+```zsh
+autoload -U bashcompinit
+bashcompinit
+eval "$(register-python-argcomplete --global)"
+```
+
 ## Usage
 
 Basic usage:

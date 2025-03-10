@@ -4,6 +4,13 @@ import argparse
 import sys
 from typing import List, Optional
 
+# Import argcomplete for shell completion
+try:
+    import argcomplete
+except ImportError:
+    # argcomplete is optional
+    argcomplete = None
+
 from .formatter import view_csv
 
 
@@ -82,6 +89,10 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
         default='^#',
         help='Regex pattern to identify comment lines (default: "^#")',
     )
+    
+    # Register parser with argcomplete if available
+    if argcomplete:
+        argcomplete.autocomplete(parser)
     
     return parser.parse_args(args)
 

@@ -7,14 +7,22 @@ with open(os.path.join(os.path.dirname(__file__), "README.md"), encoding="utf-8"
 
 setup(
     name="vl-csv-viewer",  # Changed package name to be more descriptive
-    version="0.4.4",
+    version="0.4.5",  # Bumped version for shell completion support
     packages=find_packages(),
     entry_points={
         "console_scripts": [
             "vl=vl.cli:main",
             "vll=vl.pager:main",
         ],
+        # Register argcomplete for shell completion
+        "argcomplete.completers": [
+            "vl=vl.cli:main",
+            "vll=vl.pager:main",
+        ],
     },
+    install_requires=[
+        "argcomplete>=1.0.0",
+    ],
     description="An ultrafast CSV viewer in terminals",
     long_description=long_description,
     long_description_content_type="text/markdown",
