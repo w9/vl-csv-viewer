@@ -25,8 +25,8 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         '-d', '--delimiter',
         type=str,
-        default=',',
-        help='CSV delimiter character',
+        default=None,  # Default will be determined based on file extension
+        help='CSV delimiter character (default: "," for .csv files, "\\t" for others)',
     )
     
     parser.add_argument(
@@ -84,6 +84,16 @@ def main(args: Optional[List[str]] = None) -> int:
             print("Error: No input file specified and no data piped to stdin.", file=sys.stderr)
             print("Usage: cat data.csv | vl  # or use vl filename.csv", file=sys.stderr)
             return 1
+            
+        # Determine the delimiter based on file extension if not explicitly provided
+        delimiter = parsed_args.delimiter
+        if delimiter is None:
+            # For stdin or files not ending with .csv, use tab as the default delimiter
+            if parsed_args.file == '-' or not parsed_args.file.lower().endswith('.csv'):
+                delimiter = '\t'
+            else:
+                # For .csv files, use comma as the default delimiter
+                delimiter = ','
         
         # Only use colors if the --colors flag is set
         if parsed_args.colors:
@@ -92,7 +102,7 @@ def main(args: Optional[List[str]] = None) -> int:
             
             view_csv(
                 file_path=parsed_args.file,
-                delimiter=parsed_args.delimiter,
+                delimiter=delimiter,
                 header=not parsed_args.no_header,
                 min_col_width=parsed_args.min_width,
                 max_col_width=parsed_args.max_width,
@@ -104,7 +114,7 @@ def main(args: Optional[List[str]] = None) -> int:
             # Don't pass color options if --colors is not set
             view_csv(
                 file_path=parsed_args.file,
-                delimiter=parsed_args.delimiter,
+                delimiter=delimiter,
                 header=not parsed_args.no_header,
                 min_col_width=parsed_args.min_width,
                 max_col_width=parsed_args.max_width,

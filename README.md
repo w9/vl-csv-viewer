@@ -30,8 +30,11 @@ pip install .
 Basic usage:
 
 ```bash
-# View a CSV file
+# View a CSV file (uses comma delimiter by default for .csv files)
 vl data.csv
+
+# View a TSV or other file (uses tab delimiter by default for non-csv files)
+vl data.tsv
 
 # View a CSV file with pager (less -SR)
 vll data.csv

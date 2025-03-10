@@ -25,7 +25,7 @@ class TestCLI(unittest.TestCase):
         args = parse_args([self.small_fixture])
         
         self.assertEqual(args.file, self.small_fixture)
-        self.assertEqual(args.delimiter, ',')
+        self.assertIsNone(args.delimiter)  # Now None, will be determined at runtime
         self.assertFalse(args.no_header)
         self.assertEqual(args.min_width, 5)
         self.assertIsNone(args.max_width)
@@ -74,7 +74,7 @@ class TestCLI(unittest.TestCase):
         # Check if view_csv was called with the correct parameters
         mock_view_csv.assert_called_once_with(
             file_path=self.small_fixture,
-            delimiter=',',
+            delimiter=',',  # .csv file should use comma
             header=True,  # no_header is False by default
             min_col_width=5,
             max_col_width=None,
@@ -155,7 +155,7 @@ class TestCLI(unittest.TestCase):
         # Check if view_csv was called with the correct parameters
         mock_view_csv.assert_called_once_with(
             file_path=self.large_fixture,
-            delimiter=',',
+            delimiter=',',  # .csv file should use comma
             header=True,
             min_col_width=5,
             max_col_width=None,
@@ -182,7 +182,7 @@ class TestCLI(unittest.TestCase):
         # Check if view_csv was called with the correct parameters
         mock_view_csv.assert_called_once_with(
             file_path=self.small_fixture,
-            delimiter=',',
+            delimiter=',',  # Should be comma since it's a .csv file
             header=True,
             min_col_width=5,
             max_col_width=None,
@@ -193,6 +193,55 @@ class TestCLI(unittest.TestCase):
         
         # Should return 0 on success
         self.assertEqual(result, 0)
+
+    @patch('vl.cli.view_csv')
+    def test_delimiter_selection_for_csv(self, mock_view_csv):
+        """Test that .csv files use comma as delimiter by default."""
+        # Create a path with .csv extension
+        csv_path = self.small_fixture  # Already has .csv extension
+        
+        result = main([csv_path])
+        
+        # Check if comma was used as delimiter
+        mock_view_csv.assert_called_once()
+        self.assertEqual(mock_view_csv.call_args[1]['delimiter'], ',')
+        
+    @patch('vl.cli.view_csv')
+    def test_delimiter_selection_for_non_csv(self, mock_view_csv):
+        """Test that non-csv files use tab as delimiter by default."""
+        # Simulate a file without .csv extension
+        with patch('vl.cli.parse_args') as mock_parse_args:
+            mock_parse_args.return_value = type('Args', (), {
+                'file': 'data.tsv',  # Non-CSV extension
+                'delimiter': None,
+                'no_header': False,
+                'min_width': 5,
+                'max_width': None,
+                'style': 'grid',
+                'colors': False,
+                'color_list': 'bg_cyan,bg_white'
+            })
+            
+            result = main()
+            
+            # Check if tab was used as delimiter
+            mock_view_csv.assert_called_once()
+            self.assertEqual(mock_view_csv.call_args[1]['delimiter'], '\t')
+            
+    @patch('vl.cli.view_csv')
+    def test_explicit_delimiter_takes_precedence(self, mock_view_csv):
+        """Test that explicitly specified delimiter overrides auto-detection."""
+        # Use a .csv file but with an explicit delimiter
+        args = [
+            self.small_fixture,
+            '-d', ';'
+        ]
+        
+        result = main(args)
+        
+        # Check if semicolon was used despite the .csv extension
+        mock_view_csv.assert_called_once()
+        self.assertEqual(mock_view_csv.call_args[1]['delimiter'], ';')
 
 
 if __name__ == '__main__':
