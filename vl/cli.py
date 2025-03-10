@@ -74,7 +74,9 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
         '--color-list',
         type=str,
         default='bg_cyan,bg_white',
-        help='Comma-separated list of color names for alternating columns',
+        help='Comma-separated list of color names for alternating columns. '
+             'Available colors: black, red, green, yellow, blue, magenta, cyan, white '
+             'and background colors: bg_black, bg_red, bg_green, bg_yellow, bg_blue, bg_magenta, bg_cyan, bg_white',
     )
     
     parser.add_argument(
