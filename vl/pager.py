@@ -15,40 +15,46 @@ def main(args=None):
         # Open the less process
         less_proc = subprocess.Popen(less_cmd, stdin=subprocess.PIPE, universal_newlines=True)
         
-        # Capture the output to a StringIO buffer
-        from io import StringIO
-        buffer = StringIO()
-        
-        # Redirect stdout to our buffer
+        # Save the original stdout
         old_stdout = sys.stdout
-        sys.stdout = buffer
         
-        # When stdin has data piped to it and we're using the 'vll' command alone
-        # or with '-' as the first argument, we need to preserve stdin
-        stdin_data = None
-        if not sys.stdin.isatty():
-            # Only read from stdin if necessary: when args is None or
-            # it's ['-'] or an empty list (meaning user typed just 'vll')
-            args_list = args if args is not None else []
-            if not args_list or args_list[0] == '-':
-                # Read all stdin data
-                stdin_data = sys.stdin.read()
-                
-                # Create a new stdin for the CLI to use
-                import io
-                old_stdin = sys.stdin
-                sys.stdin = io.StringIO(stdin_data)
+        # Redirect stdout to the less process
+        sys.stdout = less_proc.stdin
+        
+        # This ensures errors go to the terminal directly and not through less
+        sys.stderr = old_stdout
         
         # Run the CLI with the provided arguments
-        exit_code = cli.main(args)
+        try:
+            exit_code = cli.main(args)
+            
+            # If we get here, CLI ran successfully
+            # Restore stdout and close the pipe
+            sys.stdout.flush()
+            sys.stdout = old_stdout
+            less_proc.stdin.close()
+            
+            # Wait for less to exit
+            less_proc.wait()
+            
+            return exit_code
+            
+        except SystemExit as e:
+            # Argument parsing error or other exit, restore stdout and propagate
+            sys.stdout = old_stdout
+            less_proc.stdin.close()
+            less_proc.terminate()
+            return e.code
         
-        # If we replaced stdin, restore it
-        if stdin_data is not None:
-            sys.stdin = old_stdin
-        
-        # Get the output and write it to less
-        output = buffer.getvalue()
-        less_proc.stdin.write(output)
+    except (BrokenPipeError, IOError):
+        # Less was closed by the user
+        sys.stdout = old_stdout if 'old_stdout' in locals() else sys.stdout
+        return 0
+    except Exception as e:
+        # Make sure we restore stdout
+        sys.stdout = old_stdout if 'old_stdout' in locals() else sys.stdout
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
         
         # Restore stdout and close the pipe
         sys.stdout = old_stdout
