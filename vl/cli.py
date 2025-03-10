@@ -45,7 +45,7 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         '--min-width',
         type=int,
-        default=5,
+        default=0,
         help='Minimum column width',
     )
     

@@ -7,7 +7,7 @@ with open(os.path.join(os.path.dirname(__file__), "README.md"), encoding="utf-8"
 
 setup(
     name="vl-csv-viewer",  # Changed package name to be more descriptive
-    version="0.4.6",  # Bumped version for improved help documentation
+    version="0.4.7",  # Bumped version for min-width and ellipsis improvements
     packages=find_packages(),
     entry_points={
         "console_scripts": [

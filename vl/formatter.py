@@ -42,7 +42,7 @@ class CSVViewer:
         self,
         delimiter: str = ',',
         header: bool = True,
-        min_col_width: int = 5,
+        min_col_width: int = 0,
         max_col_width: Optional[int] = None,
         border_style: str = 'simple',
         output_stream = None,
@@ -200,7 +200,7 @@ class CSVViewer:
         """Truncate a cell to the specified width if needed."""
         if not width or len(cell) <= width:
             return cell
-        return cell[:width - 3] + '...'
+        return cell[:width - 1] + '…'
 
     def _get_color(self, col_index: int) -> str:
         """Get the color code for a given column index."""
