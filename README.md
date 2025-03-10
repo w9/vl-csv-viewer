@@ -10,6 +10,7 @@ An ultrafast CSV viewer in terminals. VL (View Large) is designed to handle very
 - **Multiple border styles**: Choose from different table border styles (grid, simple, minimal, none)
 - **Colored columns**: Display CSV data with alternating column colors for better readability
 - **Customizable display**: Control header behavior, column widths, colors, and more
+- **Comment filtering**: Ignore comment lines based on regex patterns (default: lines starting with #)
 
 ## Installation
 
@@ -44,6 +45,12 @@ vl -d ';' data.csv
 
 # Don't treat the first row as a header
 vl --no-header data.csv
+
+# Ignore comment lines (lines starting with #)
+vl --ignore-comments data.csv
+
+# Use a custom comment pattern (regex)
+vl --ignore-comments --comment-pattern "^//.*" data.csv
 ```
 The package provides two commands:
 - `vl`: Directly outputs to the terminal

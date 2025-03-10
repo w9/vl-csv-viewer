@@ -2,9 +2,10 @@
 
 import csv
 import os
+import re
 import shutil
 import sys
-from typing import List, Optional, Dict, Tuple, Iterator
+from typing import List, Optional, Dict, Tuple, Iterator, Pattern
 
 
 class CSVViewer:
@@ -47,6 +48,8 @@ class CSVViewer:
         output_stream = None,
         use_colors: bool = False,
         column_colors: Optional[List[str]] = None,
+        ignore_comments: bool = False,
+        comment_pattern: str = '^#',
     ):
         """
         Initialize the CSV viewer.
@@ -60,6 +63,8 @@ class CSVViewer:
             output_stream: Stream to write output to (defaults to sys.stdout)
             use_colors: Whether to use alternating colors for columns
             column_colors: List of color names for alternating columns when use_colors is True
+            ignore_comments: Whether to ignore lines matching the comment pattern
+            comment_pattern: Regex pattern to identify comment lines (default: "^#")
         """
         self.delimiter = delimiter
         self.header = header
@@ -72,6 +77,10 @@ class CSVViewer:
         # Color settings
         self.use_colors = use_colors
         self.column_colors = column_colors or self.DEFAULT_COLUMN_COLORS
+        
+        # Comment filtering settings
+        self.ignore_comments = ignore_comments
+        self.comment_pattern = re.compile(comment_pattern) if ignore_comments else None
         
         # Border characters for different styles
         self.border_chars = self._get_border_chars()
@@ -107,6 +116,23 @@ class CSVViewer:
         }
         return styles.get(self.border_style, styles['simple'])
 
+    def _is_comment_line(self, row: List[str]) -> bool:
+        """
+        Check if a row is a comment line based on the comment pattern.
+        
+        Args:
+            row: A row from the CSV file
+            
+        Returns:
+            True if the row is a comment line, False otherwise
+        """
+        if not self.ignore_comments or not row:
+            return False
+            
+        # Join the row into a single string for regex matching
+        # We only check the first cell for comments
+        return bool(self.comment_pattern.match(row[0]))
+    
     def _csv_reader(self, file_input) -> Iterator[List[str]]:
         """
         Create a CSV reader that processes the file line by line.
@@ -115,19 +141,21 @@ class CSVViewer:
             file_input: Path to the CSV file or a file-like object (e.g., stdin)
             
         Yields:
-            Each row of the CSV file as a list of strings
+            Each row of the CSV file as a list of strings, excluding comment lines if configured
         """
         # If file_input is a string, it's a file path
         if isinstance(file_input, str):
             with open(file_input, 'r', newline='') as f:
                 reader = csv.reader(f, delimiter=self.delimiter)
                 for row in reader:
-                    yield row
+                    if not self._is_comment_line(row):
+                        yield row
         # Otherwise treat it as a file-like object (e.g., stdin)
         else:
             reader = csv.reader(file_input, delimiter=self.delimiter)
             for row in reader:
-                yield row
+                if not self._is_comment_line(row):
+                    yield row
 
     def _calculate_initial_col_widths(self, reader: Iterator[List[str]], num_preview_rows: int = 100) -> List[int]:
         """
@@ -305,7 +333,9 @@ def view_csv(
     max_col_width: Optional[int] = None,
     border_style: str = 'simple',
     use_colors: bool = False,
-    column_colors: Optional[List[str]] = None
+    column_colors: Optional[List[str]] = None,
+    ignore_comments: bool = False,
+    comment_pattern: str = '^#'
 ) -> None:
     """
     View a CSV file in the terminal.
@@ -319,6 +349,8 @@ def view_csv(
         border_style: Table border style
         use_colors: Whether to use alternating colors for columns
         column_colors: List of color names for alternating columns
+        ignore_comments: Whether to ignore lines matching the comment pattern
+        comment_pattern: Regex pattern to identify comment lines (default: "^#")
     """
     viewer = CSVViewer(
         delimiter=delimiter,
@@ -328,6 +360,8 @@ def view_csv(
         border_style=border_style,
         use_colors=use_colors,
         column_colors=column_colors,
+        ignore_comments=ignore_comments,
+        comment_pattern=comment_pattern,
     )
     
     # Handle stdin when file_path is '-' or None

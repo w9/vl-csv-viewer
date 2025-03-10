@@ -70,6 +70,19 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
         help='Comma-separated list of color names for alternating columns',
     )
     
+    parser.add_argument(
+        '--ignore-comments',
+        action='store_true',
+        help='Ignore lines that match the comment pattern',
+    )
+    
+    parser.add_argument(
+        '--comment-pattern',
+        type=str,
+        default='^#',
+        help='Regex pattern to identify comment lines (default: "^#")',
+    )
+    
     return parser.parse_args(args)
 
 
@@ -95,31 +108,24 @@ def main(args: Optional[List[str]] = None) -> int:
                 # For .csv files, use comma as the default delimiter
                 delimiter = ','
         
-        # Only use colors if the --colors flag is set
-        if parsed_args.colors:
-            # Convert the color list string to a list
-            color_list = parsed_args.color_list.split(',') if parsed_args.color_list else None
+        # Convert the color list string to a list if colors are enabled
+        color_list = None
+        if parsed_args.colors and parsed_args.color_list:
+            color_list = parsed_args.color_list.split(',')
             
-            view_csv(
-                file_path=parsed_args.file,
-                delimiter=delimiter,
-                header=not parsed_args.no_header,
-                min_col_width=parsed_args.min_width,
-                max_col_width=parsed_args.max_width,
-                border_style=parsed_args.style,
-                use_colors=True,
-                column_colors=color_list,
-            )
-        else:
-            # Don't pass color options if --colors is not set
-            view_csv(
-                file_path=parsed_args.file,
-                delimiter=delimiter,
-                header=not parsed_args.no_header,
-                min_col_width=parsed_args.min_width,
-                max_col_width=parsed_args.max_width,
-                border_style=parsed_args.style,
-            )
+        # Call view_csv with all parameters
+        view_csv(
+            file_path=parsed_args.file,
+            delimiter=delimiter,
+            header=not parsed_args.no_header,
+            min_col_width=parsed_args.min_width,
+            max_col_width=parsed_args.max_width,
+            border_style=parsed_args.style,
+            use_colors=parsed_args.colors,
+            column_colors=color_list,
+            ignore_comments=parsed_args.ignore_comments,
+            comment_pattern=parsed_args.comment_pattern,
+        )
         
         return 0
         
