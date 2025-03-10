@@ -1,0 +1,29 @@
+Name,Age,City,Occupation,Salary,Department,Start Date,Performance Rating,Email,Phone Number
+John Doe,32,New York,Software Engineer,120000,Engineering,2020-01-15,4.5,john.doe@example.com,+1-555-123-4567
+Jane Smith,28,San Francisco,Data Scientist,135000,Data Science,2019-05-22,4.8,jane.smith@example.com,+1-555-234-5678
+Bob Johnson,45,Chicago,Project Manager,110000,Product Management,2015-11-03,4.2,bob.johnson@example.com,+1-555-345-6789
+Alice Williams,37,Boston,UX Designer,95000,Design,2018-03-12,4.6,alice.williams@example.com,+1-555-456-7890
+Charlie Brown,29,Seattle,DevOps Engineer,125000,Infrastructure,2021-02-01,4.3,charlie.brown@example.com,+1-555-567-8901
+Diana Prince,33,Austin,Product Manager,115000,Product Management,2017-09-15,4.7,diana.prince@example.com,+1-555-678-9012
+Edward Norton,41,Portland,Senior Developer,130000,Engineering,2016-04-18,4.4,edward.norton@example.com,+1-555-789-0123
+Fiona Apple,31,Los Angeles,Marketing Specialist,90000,Marketing,2019-12-05,4.1,fiona.apple@example.com,+1-555-890-1234
+George Harrison,38,Denver,System Administrator,105000,Infrastructure,2017-07-22,4.0,george.harrison@example.com,+1-555-901-2345
+Helen Hunt,44,Miami,HR Manager,100000,Human Resources,2014-08-11,4.5,helen.hunt@example.com,+1-555-012-3456
+Ian McKellen,36,Philadelphia,Database Administrator,115000,Engineering,2018-10-09,4.2,ian.mckellen@example.com,+1-555-123-4567
+Julia Roberts,39,Atlanta,Sales Manager,125000,Sales,2016-03-28,4.8,julia.roberts@example.com,+1-555-234-5678
+Kevin Bacon,42,Dallas,Finance Analyst,95000,Finance,2019-01-14,3.9,kevin.bacon@example.com,+1-555-345-6789
+Laura Dern,35,Washington DC,Legal Counsel,140000,Legal,2017-05-30,4.6,laura.dern@example.com,+1-555-456-7890
+Michael Jordan,44,Charlotte,VP of Operations,180000,Executive,2015-12-01,4.9,michael.jordan@example.com,+1-555-567-8901
+Nancy Wheeler,27,Indianapolis,Junior Developer,80000,Engineering,2021-06-15,4.0,nancy.wheeler@example.com,+1-555-678-9012
+Oscar Wilde,40,San Diego,Content Writer,85000,Marketing,2018-02-14,4.3,oscar.wilde@example.com,+1-555-789-0123
+Patricia Arquette,36,Nashville,Account Manager,95000,Sales,2019-08-23,4.4,patricia.arquette@example.com,+1-555-890-1234
+Quentin Tarantino,48,Las Vegas,Creative Director,130000,Design,2016-09-05,4.7,quentin.tarantino@example.com,+1-555-901-2345
+Rachel Green,30,Phoenix,Customer Support,75000,Support,2020-03-18,4.1,rachel.green@example.com,+1-555-012-3456
+Samuel Jackson,45,Houston,IT Director,150000,IT Management,2014-05-05,4.8,samuel.jackson@example.com,+1-555-123-4567
+Tina Fey,38,Detroit,Training Specialist,90000,Human Resources,2017-11-11,4.5,tina.fey@example.com,+1-555-234-5678
+Uma Thurman,41,Minneapolis,Business Analyst,105000,Analytics,2016-07-07,4.2,uma.thurman@example.com,+1-555-345-6789
+Victor Hugo,39,Columbus,Technical Writer,85000,Documentation,2018-08-28,4.0,victor.hugo@example.com,+1-555-456-7890
+Walter White,50,Albuquerque,Chemistry Teacher,65000,Education,2008-01-20,4.9,walter.white@example.com,+1-555-567-8901
+Xenia Onatopp,34,Jacksonville,Quality Assurance,95000,QA,2019-04-09,4.3,xenia.onatopp@example.com,+1-555-678-9012
+Yolanda Adams,42,El Paso,HR Specialist,85000,Human Resources,2017-03-12,4.1,yolanda.adams@example.com,+1-555-789-0123
+Zack Morris,25,San Antonio,Social Media Manager,70000,Marketing,2021-05-04,3.8,zack.morris@example.com,+1-555-890-1234

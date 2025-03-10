@@ -17,7 +17,9 @@ class TestCSVViewer(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.fixture_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'small.csv')
+        self.fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+        self.small_fixture = os.path.join(self.fixtures_dir, 'small.csv')
+        self.large_fixture = os.path.join(self.fixtures_dir, 'large.csv')
         self.output = io.StringIO()  # Capture output
 
     def test_init_with_defaults(self):
@@ -150,7 +152,7 @@ class TestCSVViewer(unittest.TestCase):
         """Test viewing a CSV file."""
         # Use a small fixture file
         viewer = CSVViewer(output_stream=mock_stdout)
-        viewer.view_csv(self.fixture_path)
+        viewer.view_csv(self.small_fixture)
         
         output = mock_stdout.getvalue()
         
@@ -171,6 +173,32 @@ class TestCSVViewer(unittest.TestCase):
         
         # Check for the total count
         self.assertIn("Total rows: 5", output)
+        
+    @patch('sys.stdout', new_callable=io.StringIO)
+    def test_view_csv_with_large_file(self, mock_stdout):
+        """Test viewing a larger CSV file."""
+        # Use the large fixture file with more columns and rows
+        viewer = CSVViewer(output_stream=mock_stdout)
+        viewer.view_csv(self.large_fixture)
+        
+        output = mock_stdout.getvalue()
+        
+        # Check that the output contains expected headers
+        self.assertIn("Name", output)
+        self.assertIn("Age", output)
+        self.assertIn("City", output)
+        self.assertIn("Occupation", output)
+        self.assertIn("Salary", output)
+        self.assertIn("Department", output)
+        
+        # Check for specific records
+        self.assertIn("John Doe", output)
+        self.assertIn("Jane Smith", output)
+        self.assertIn("Software Engineer", output)
+        self.assertIn("Data Scientist", output)
+        
+        # Check for the total count (29 rows including header)
+        self.assertIn("Total rows: 29", output)
 
     @patch('sys.stdout', new_callable=io.StringIO)
     def test_view_csv_different_styles(self, mock_stdout):
@@ -182,7 +210,7 @@ class TestCSVViewer(unittest.TestCase):
             mock_stdout.seek(0)
             
             viewer = CSVViewer(border_style=style, output_stream=mock_stdout)
-            viewer.view_csv(self.fixture_path)
+            viewer.view_csv(self.small_fixture)
             
             output = mock_stdout.getvalue()
             
@@ -210,7 +238,7 @@ class TestCSVViewer(unittest.TestCase):
     def test_view_csv_no_header(self, mock_stdout):
         """Test viewing CSV with no header."""
         viewer = CSVViewer(header=False, output_stream=mock_stdout)
-        viewer.view_csv(self.fixture_path)
+        viewer.view_csv(self.small_fixture)
         
         output = mock_stdout.getvalue()
         
@@ -229,7 +257,7 @@ class TestCSVViewer(unittest.TestCase):
         # And verify that the formatting is different from the header case
         with patch('sys.stdout', new_callable=io.StringIO) as header_stdout:
             header_viewer = CSVViewer(header=True, output_stream=header_stdout)
-            header_viewer.view_csv(self.fixture_path)
+            header_viewer.view_csv(self.small_fixture)
             header_output = header_stdout.getvalue()
             
             # The outputs should be different because of the header formatting
@@ -244,7 +272,7 @@ class TestCSVViewer(unittest.TestCase):
         
         # Call the function
         view_csv(
-            file_path=self.fixture_path,
+            file_path=self.small_fixture,
             delimiter=';',
             header=False,
             min_col_width=10,
@@ -262,7 +290,7 @@ class TestCSVViewer(unittest.TestCase):
         )
         
         # Check if view_csv was called on the instance
-        mock_instance.view_csv.assert_called_once_with(self.fixture_path)
+        mock_instance.view_csv.assert_called_once_with(self.small_fixture)
 
 
 if __name__ == '__main__':
