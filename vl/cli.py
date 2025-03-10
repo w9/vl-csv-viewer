@@ -55,6 +55,19 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
         help='Table border style',
     )
     
+    parser.add_argument(
+        '--colors',
+        action='store_true',
+        help='Use alternating colors for columns',
+    )
+    
+    parser.add_argument(
+        '--color-list',
+        type=str,
+        default='bg_cyan,bg_white',
+        help='Comma-separated list of color names for alternating columns',
+    )
+    
     return parser.parse_args(args)
 
 
@@ -63,14 +76,31 @@ def main(args: Optional[List[str]] = None) -> int:
     try:
         parsed_args = parse_args(args)
         
-        view_csv(
-            file_path=parsed_args.file,
-            delimiter=parsed_args.delimiter,
-            header=not parsed_args.no_header,
-            min_col_width=parsed_args.min_width,
-            max_col_width=parsed_args.max_width,
-            border_style=parsed_args.style,
-        )
+        # Only use colors if the --colors flag is set
+        if parsed_args.colors:
+            # Convert the color list string to a list
+            color_list = parsed_args.color_list.split(',') if parsed_args.color_list else None
+            
+            view_csv(
+                file_path=parsed_args.file,
+                delimiter=parsed_args.delimiter,
+                header=not parsed_args.no_header,
+                min_col_width=parsed_args.min_width,
+                max_col_width=parsed_args.max_width,
+                border_style=parsed_args.style,
+                use_colors=True,
+                column_colors=color_list,
+            )
+        else:
+            # Don't pass color options if --colors is not set
+            view_csv(
+                file_path=parsed_args.file,
+                delimiter=parsed_args.delimiter,
+                header=not parsed_args.no_header,
+                min_col_width=parsed_args.min_width,
+                max_col_width=parsed_args.max_width,
+                border_style=parsed_args.style,
+            )
         
         return 0
         

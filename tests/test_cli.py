@@ -30,6 +30,8 @@ class TestCLI(unittest.TestCase):
         self.assertEqual(args.min_width, 5)
         self.assertIsNone(args.max_width)
         self.assertEqual(args.style, 'grid')
+        self.assertFalse(args.colors)
+        self.assertEqual(args.color_list, 'bg_cyan,bg_white')
 
     def test_parse_args_custom(self):
         """Test argument parsing with custom values."""
@@ -39,7 +41,9 @@ class TestCLI(unittest.TestCase):
             '--no-header',
             '--min-width', '10',
             '--max-width', '20',
-            '-s', 'simple'
+            '-s', 'simple',
+            '--colors',
+            '--color-list', 'red,blue,green'
         ])
         
         self.assertEqual(args.file, self.small_fixture)
@@ -48,6 +52,8 @@ class TestCLI(unittest.TestCase):
         self.assertEqual(args.min_width, 10)
         self.assertEqual(args.max_width, 20)
         self.assertEqual(args.style, 'simple')
+        self.assertTrue(args.colors)
+        self.assertEqual(args.color_list, 'red,blue,green')
 
     def test_parse_args_style_choices(self):
         """Test style argument choices."""
@@ -154,6 +160,35 @@ class TestCLI(unittest.TestCase):
             min_col_width=5,
             max_col_width=None,
             border_style='grid'
+        )
+        
+        # Should return 0 on success
+        self.assertEqual(result, 0)
+        
+    @patch('vl.cli.view_csv')
+    def test_main_with_colors(self, mock_view_csv):
+        """Test main function with color options."""
+        args = [
+            self.small_fixture,
+            '--colors',
+            '--color-list', 'red,green,blue'
+        ]
+        
+        result = main(args)
+        
+        # Color list should be split into a list
+        color_list = ['red', 'green', 'blue']
+        
+        # Check if view_csv was called with the correct parameters
+        mock_view_csv.assert_called_once_with(
+            file_path=self.small_fixture,
+            delimiter=',',
+            header=True,
+            min_col_width=5,
+            max_col_width=None,
+            border_style='grid',
+            use_colors=True,
+            column_colors=color_list
         )
         
         # Should return 0 on success
