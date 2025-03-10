@@ -17,7 +17,9 @@ def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
     parser.add_argument(
         'file',
         type=str,
-        help='CSV file to view',
+        nargs='?',
+        default='-',
+        help='CSV file to view (use - for stdin)',
     )
     
     parser.add_argument(
@@ -75,6 +77,13 @@ def main(args: Optional[List[str]] = None) -> int:
     """Run the VL CSV viewer CLI."""
     try:
         parsed_args = parse_args(args)
+        
+        # If file is stdin ('-') and stdin is a TTY (interactive terminal),
+        # we can't read from it, so show error
+        if parsed_args.file == '-' and sys.stdin.isatty():
+            print("Error: No input file specified and no data piped to stdin.", file=sys.stderr)
+            print("Usage: cat data.csv | vl  # or use vl filename.csv", file=sys.stderr)
+            return 1
         
         # Only use colors if the --colors flag is set
         if parsed_args.colors:

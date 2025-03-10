@@ -42,9 +42,22 @@ vl -d ';' data.csv
 # Don't treat the first row as a header
 vl --no-header data.csv
 ```
-
 The package provides two commands:
 - `vl`: Directly outputs to the terminal
+- `vll`: Pipes the output through `less -SR` pager (supports scrolling for large files)
+
+Both commands support piped input:
+
+```bash
+# Pipe data from another command
+cat data.csv | vl
+
+# Pipe with options
+cat data.csv | vl --colors --color-list bg_green,bg_white
+
+# Pipe with pager
+cat data.csv | vll
+```
 - `vll`: Pipes the output through `less -SR` pager (supports scrolling for large files)
 
 ### Display Options

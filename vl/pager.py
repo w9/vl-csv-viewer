@@ -23,8 +23,28 @@ def main(args=None):
         old_stdout = sys.stdout
         sys.stdout = buffer
         
+        # When stdin has data piped to it and we're using the 'vll' command alone
+        # or with '-' as the first argument, we need to preserve stdin
+        stdin_data = None
+        if not sys.stdin.isatty():
+            # Only read from stdin if necessary: when args is None or
+            # it's ['-'] or an empty list (meaning user typed just 'vll')
+            args_list = args if args is not None else []
+            if not args_list or args_list[0] == '-':
+                # Read all stdin data
+                stdin_data = sys.stdin.read()
+                
+                # Create a new stdin for the CLI to use
+                import io
+                old_stdin = sys.stdin
+                sys.stdin = io.StringIO(stdin_data)
+        
         # Run the CLI with the provided arguments
         exit_code = cli.main(args)
+        
+        # If we replaced stdin, restore it
+        if stdin_data is not None:
+            sys.stdin = old_stdin
         
         # Get the output and write it to less
         output = buffer.getvalue()

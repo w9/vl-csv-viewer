@@ -107,18 +107,25 @@ class CSVViewer:
         }
         return styles.get(self.border_style, styles['simple'])
 
-    def _csv_reader(self, file_path: str) -> Iterator[List[str]]:
+    def _csv_reader(self, file_input) -> Iterator[List[str]]:
         """
         Create a CSV reader that processes the file line by line.
         
         Args:
-            file_path: Path to the CSV file
+            file_input: Path to the CSV file or a file-like object (e.g., stdin)
             
         Yields:
             Each row of the CSV file as a list of strings
         """
-        with open(file_path, 'r', newline='') as f:
-            reader = csv.reader(f, delimiter=self.delimiter)
+        # If file_input is a string, it's a file path
+        if isinstance(file_input, str):
+            with open(file_input, 'r', newline='') as f:
+                reader = csv.reader(f, delimiter=self.delimiter)
+                for row in reader:
+                    yield row
+        # Otherwise treat it as a file-like object (e.g., stdin)
+        else:
+            reader = csv.reader(file_input, delimiter=self.delimiter)
             for row in reader:
                 yield row
 
@@ -235,14 +242,14 @@ class CSVViewer:
         else:
             return ''
 
-    def view_csv(self, file_path: str) -> None:
+    def view_csv(self, file_input) -> None:
         """
         View a CSV file in the terminal.
         
         Args:
-            file_path: Path to the CSV file
+            file_input: Path to the CSV file or a file-like object (e.g., stdin)
         """
-        reader = self._csv_reader(file_path)
+        reader = self._csv_reader(file_input)
 
         # Calculate initial column widths from preview rows
         col_widths, preview_rows = self._calculate_initial_col_widths(reader)
@@ -291,7 +298,7 @@ class CSVViewer:
 
 
 def view_csv(
-    file_path: str,
+    file_path: Optional[str] = None,
     delimiter: str = ',',
     header: bool = True,
     min_col_width: int = 5,
@@ -304,7 +311,7 @@ def view_csv(
     View a CSV file in the terminal.
     
     Args:
-        file_path: Path to the CSV file
+        file_path: Path to the CSV file, '-' for stdin, or None for stdin
         delimiter: CSV delimiter character
         header: Whether to treat the first row as a header
         min_col_width: Minimum width for columns
@@ -322,4 +329,9 @@ def view_csv(
         use_colors=use_colors,
         column_colors=column_colors,
     )
-    viewer.view_csv(file_path)
+    
+    # Handle stdin when file_path is '-' or None
+    if file_path is None or file_path == '-':
+        viewer.view_csv(sys.stdin)
+    else:
+        viewer.view_csv(file_path)
