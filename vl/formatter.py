@@ -13,6 +13,30 @@ class CSVViewer:
     Uses direct printing for output, making it compatible with all terminal environments.
     """
 
+    # ANSI color codes
+    COLORS = {
+        'reset': '\033[0m',
+        'black': '\033[30m',
+        'red': '\033[31m',
+        'green': '\033[32m',
+        'yellow': '\033[33m',
+        'blue': '\033[34m',
+        'magenta': '\033[35m',
+        'cyan': '\033[36m',
+        'white': '\033[37m',
+        'bg_black': '\033[40m',
+        'bg_red': '\033[41m',
+        'bg_green': '\033[42m',
+        'bg_yellow': '\033[43m',
+        'bg_blue': '\033[44m',
+        'bg_magenta': '\033[45m',
+        'bg_cyan': '\033[46m',
+        'bg_white': '\033[47m',
+    }
+    
+    # Default colors for the alternating columns mode
+    DEFAULT_COLUMN_COLORS = ['bg_cyan', 'bg_white']
+
     def __init__(
         self,
         delimiter: str = ',',
@@ -21,6 +45,8 @@ class CSVViewer:
         max_col_width: Optional[int] = None,
         border_style: str = 'simple',
         output_stream = None,
+        use_colors: bool = False,
+        column_colors: Optional[List[str]] = None,
     ):
         """
         Initialize the CSV viewer.
@@ -30,8 +56,10 @@ class CSVViewer:
             header: Whether the first row should be treated as a header
             min_col_width: Minimum width for columns
             max_col_width: Maximum width for any column (None for unlimited)
-            border_style: Table border style ('simple', 'grid', 'minimal', or 'none')
+            border_style: Table border style ('simple', 'grid', 'minimal', 'none')
             output_stream: Stream to write output to (defaults to sys.stdout)
+            use_colors: Whether to use alternating colors for columns
+            column_colors: List of color names for alternating columns when use_colors is True
         """
         self.delimiter = delimiter
         self.header = header
@@ -40,6 +68,10 @@ class CSVViewer:
         self.border_style = border_style
         self.output_stream = output_stream or sys.stdout
         self.term_height, self.term_width = self._get_terminal_size()
+        
+        # Color settings
+        self.use_colors = use_colors
+        self.column_colors = column_colors or self.DEFAULT_COLUMN_COLORS
         
         # Border characters for different styles
         self.border_chars = self._get_border_chars()
@@ -135,6 +167,15 @@ class CSVViewer:
             return cell
         return cell[:width - 3] + '...'
 
+    def _get_color(self, col_index: int) -> str:
+        """Get the color code for a given column index."""
+        if not self.use_colors:
+            return ""
+        
+        # Use round-robin color selection from the user-defined array
+        color_name = self.column_colors[col_index % len(self.column_colors)]
+        return self.COLORS.get(color_name, "")
+
     def _format_row(self, row: List[str], col_widths: List[int]) -> str:
         """Format a single row of data for display."""
         border_chars = self.border_chars
@@ -153,11 +194,23 @@ class CSVViewer:
                 cell = self._truncate_cell(cell, self.max_col_width)
             
             # Ensure the cell is exactly the width specified in col_widths
-            cells.append(f" {cell:<{width}} ")
+            if self.use_colors:
+                # Apply color to the cell
+                color_code = self._get_color(i)
+                formatted_cell = f"{color_code} {cell:<{width}} {self.COLORS['reset']}"
+                cells.append(formatted_cell)
+            else:
+                # Standard formatting without colors
+                cells.append(f" {cell:<{width}} ")
         
         # Add empty cells if row has fewer columns than col_widths
         for i in range(process_cols, len(col_widths)):
-            cells.append(f" {'':<{col_widths[i]}} ")
+            if self.use_colors:
+                color_code = self._get_color(i)
+                formatted_cell = f"{color_code} {'':<{col_widths[i]}} {self.COLORS['reset']}"
+                cells.append(formatted_cell)
+            else:
+                cells.append(f" {'':<{col_widths[i]}} ")
         
         # Join cells with vertical border character
         return border_chars['v'] + border_chars['v'].join(cells) + border_chars['v']
@@ -240,10 +293,12 @@ class CSVViewer:
 def view_csv(
     file_path: str,
     delimiter: str = ',',
-    header: bool = True, 
+    header: bool = True,
     min_col_width: int = 5,
     max_col_width: Optional[int] = None,
-    border_style: str = 'simple'
+    border_style: str = 'simple',
+    use_colors: bool = False,
+    column_colors: Optional[List[str]] = None
 ) -> None:
     """
     View a CSV file in the terminal.
@@ -255,6 +310,8 @@ def view_csv(
         min_col_width: Minimum width for columns
         max_col_width: Maximum width for any column
         border_style: Table border style
+        use_colors: Whether to use alternating colors for columns
+        column_colors: List of color names for alternating columns
     """
     viewer = CSVViewer(
         delimiter=delimiter,
@@ -262,5 +319,7 @@ def view_csv(
         min_col_width=min_col_width,
         max_col_width=max_col_width,
         border_style=border_style,
+        use_colors=use_colors,
+        column_colors=column_colors,
     )
     viewer.view_csv(file_path)

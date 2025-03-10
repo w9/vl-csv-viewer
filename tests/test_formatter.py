@@ -268,7 +268,9 @@ class TestCSVViewer(unittest.TestCase):
             header=False,
             min_col_width=10,
             max_col_width=20,
-            border_style='grid'
+            border_style='grid',
+            use_colors=False,
+            column_colors=None
         )
         
         # Check if view_csv was called on the instance
@@ -353,9 +355,10 @@ class TestCSVViewer(unittest.TestCase):
         self.assertEqual(len(set(border_lengths)), 1,
                          f"Border lines have inconsistent lengths: {border_lengths}")
         
-        # Since we're expecting users to use a pager like 'less' for wide tables,
-        # we don't require all lines to have the same length.
-        # What matters most is that columns are aligned correctly via consistent vertical separators.
+        # Check that all data lines have the same length
+        data_lengths = [len(line) for line in data_lines]
+        self.assertEqual(len(set(data_lengths)), 1,
+                         f"Data lines have inconsistent lengths: {data_lengths}")
         
         # Verify vertical alignment by checking vertical bar positions
         for line_idx, line in enumerate(data_lines):
@@ -366,6 +369,35 @@ class TestCSVViewer(unittest.TestCase):
                 # Both lists should have the same length and same values
                 self.assertEqual(reference_positions, positions,
                                 f"Vertical separators in line {line_idx} are misaligned")
+    
+    def test_alternating_color_mode(self):
+        """Test the alternating color mode."""
+        # Create a viewer with color mode enabled
+        viewer = CSVViewer(border_style='simple', use_colors=True, column_colors=['bg_cyan', 'bg_white'])
+        
+        # Create test data
+        row = ['Name', 'Age', 'City']
+        col_widths = [6, 3, 6]
+        
+        # Format row with colors
+        formatted = viewer._format_row(row, col_widths)
+        
+        # Check that the output contains ANSI color codes
+        self.assertIn('\033[46m', formatted)  # bg_cyan
+        self.assertIn('\033[47m', formatted)  # bg_white
+        self.assertIn('\033[0m', formatted)   # reset
+        
+        # Count occurrences of each color to ensure alternating pattern
+        bg_cyan_count = formatted.count('\033[46m')
+        bg_white_count = formatted.count('\033[47m')
+        
+        # We should have exactly one color code for each column
+        self.assertEqual(bg_cyan_count, 2)  # First column (Name) and third column (City)
+        self.assertEqual(bg_white_count, 1)  # Second column (Age)
+        
+        # Make sure colors reset after each column
+        reset_count = formatted.count('\033[0m')
+        self.assertEqual(reset_count, 3)  # One reset for each column
 
 
 if __name__ == '__main__':
