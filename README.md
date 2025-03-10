@@ -8,7 +8,8 @@ An ultrafast CSV viewer in terminals. VL (View Large) is designed to handle very
 - **Adaptive column sizing**: Automatically calculates optimal column widths based on content
 - **Minimal memory usage**: Designed to handle files of any size without loading them entirely into memory
 - **Multiple border styles**: Choose from different table border styles (grid, simple, minimal, none)
-- **Customizable display**: Control header behavior, column widths, and more
+- **Colored columns**: Display CSV data with alternating column colors for better readability
+- **Customizable display**: Control header behavior, column widths, colors, and more
 
 ## Installation
 
@@ -59,7 +60,20 @@ vl --min-width 10 data.csv
 
 # Set maximum column width
 vl --max-width 30 data.csv
+
+# Enable colored columns
+vl --colors data.csv
+
+# Use custom colors (comma-separated list)
+vl --colors --color-list red,green,blue,yellow data.csv
+
+# Combine with border style
+vl --colors --color-list bg_cyan,bg_white -s grid data.csv
 ```
+
+Available colors:
+- Text colors: black, red, green, yellow, blue, magenta, cyan, white
+- Background colors: bg_black, bg_red, bg_green, bg_yellow, bg_blue, bg_magenta, bg_cyan, bg_white
 
 ## Performance
 
@@ -86,7 +100,9 @@ view_csv(
     header=True,
     min_col_width=5,
     max_col_width=20,
-    border_style='grid'
+    border_style='grid',
+    use_colors=False,  # Set to True to enable colored columns
+    column_colors=['bg_cyan', 'bg_white']  # Custom colors (optional)
 )
 
 # You can also use the CSVViewer class directly for more control
@@ -97,7 +113,9 @@ viewer = CSVViewer(
     header=True,
     min_col_width=5,
     max_col_width=20,
-    border_style='grid'
+    border_style='grid',
+    use_colors=True,  # Enable colored columns
+    column_colors=['red', 'green', 'blue']  # Custom colors
 )
 viewer.view_csv('data.csv')
 ```
